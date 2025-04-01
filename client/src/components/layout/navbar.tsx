@@ -34,17 +34,20 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/">
-                <a className="flex items-center">
-                  <Car className="text-primary h-6 w-6 mr-2" />
-                  <span className="text-xl font-bold text-primary">TripSync</span>
-                </a>
-              </Link>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex-shrink-0 flex items-center">
+            <Link href="/">
+              <a className="flex items-center">
+                <Car className="text-primary h-6 w-6 mr-2" />
+                <span className="text-xl font-bold text-primary">TripSync</span>
+              </a>
+            </Link>
+          </div>
+
+          {/* Navigation Links - Desktop */}
+          <div className="hidden sm:flex items-center flex-1 justify-center">
+            <div className="flex space-x-8">
               <Link href="/">
                 <a
                   className={`${
@@ -92,7 +95,8 @@ export default function Navbar() {
             </div>
           </div>
           
-          <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+          {/* Right Side - Auth/User Actions */}
+          <div className="hidden sm:flex sm:items-center sm:space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
                 <Link href="/find-ride">
@@ -111,7 +115,7 @@ export default function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.profileImage} alt={user.fullName} />
+                        <AvatarImage src={user.profileImage || undefined} alt={user.fullName} />
                         <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
                       </Avatar>
                     </Button>
@@ -151,7 +155,7 @@ export default function Navbar() {
                 </DropdownMenu>
               </div>
             ) : (
-              <>
+              <div className="flex items-center space-x-4">
                 <Link href="/auth">
                   <Button variant="outline" className="px-4 py-2 text-sm font-medium text-primary border border-primary">
                     Sign In
@@ -162,7 +166,7 @@ export default function Navbar() {
                     Register
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
           
@@ -239,7 +243,7 @@ export default function Navbar() {
                       <div className="flex items-center px-4 py-2">
                         <div className="flex-shrink-0">
                           <Avatar className="h-10 w-10">
-                            <AvatarImage src={user.profileImage} alt={user.fullName} />
+                            <AvatarImage src={user.profileImage || undefined} alt={user.fullName} />
                             <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
                           </Avatar>
                         </div>
