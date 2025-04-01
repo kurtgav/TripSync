@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ interface RideCardProps {
 export default function RideCard({ ride }: RideCardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, navigate] = useLocation();
   const [driver, setDriver] = useState<User | null>(null);
 
   // Fetch driver details
@@ -104,7 +104,7 @@ export default function RideCard({ ride }: RideCardProps) {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <Avatar>
-              <AvatarImage src={driver?.profileImage} alt={driver?.fullName || "Driver"} />
+              <AvatarImage src={driver?.profileImage || undefined} alt={driver?.fullName || "Driver"} />
               <AvatarFallback>{driver?.fullName?.charAt(0) || "D"}</AvatarFallback>
             </Avatar>
             <div>
@@ -113,7 +113,7 @@ export default function RideCard({ ride }: RideCardProps) {
               </p>
               <div className="flex items-center">
                 <div className="flex items-center">
-                  {driver ? renderRatingStars(driver.rating) : <div className="h-3 w-12 bg-gray-200 animate-pulse rounded"></div>}
+                  {driver && driver.rating ? renderRatingStars(driver.rating) : <div className="h-3 w-12 bg-gray-200 animate-pulse rounded"></div>}
                 </div>
                 <span className="text-xs text-gray-500 ml-1">
                   {driver ? `${driver.rating} (${driver.reviewCount})` : ""}

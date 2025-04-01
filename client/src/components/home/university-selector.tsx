@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,7 +20,7 @@ import { useAuth } from "@/hooks/use-auth";
 export default function UniversitySelector() {
   const [university, setUniversity] = useState("");
   const [rideTime, setRideTime] = useState("");
-  const [, navigate] = useNavigate();
+  const [, navigate] = useLocation();
   const { user } = useAuth();
 
   const handleSearch = () => {

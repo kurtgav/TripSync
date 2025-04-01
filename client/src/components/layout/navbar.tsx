@@ -18,7 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Car, Menu, User, MapPin, Dashboard, LogOut } from "lucide-react";
+import { Car, Menu, User, MapPin, LayoutDashboard, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -128,7 +128,7 @@ export default function Navbar() {
                       <DropdownMenuItem asChild>
                         <Link href="/dashboard">
                           <a className="flex cursor-pointer items-center">
-                            <Dashboard className="mr-2 h-4 w-4" />
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
                             <span>Dashboard</span>
                           </a>
                         </Link>

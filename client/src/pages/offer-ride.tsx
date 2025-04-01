@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Helmet } from "react-helmet";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -63,7 +63,7 @@ const offerRideSchema = z.object({
 export default function OfferRide() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, navigate] = useLocation();
   const [isRecurring, setIsRecurring] = useState(false);
   
   // Array of days of the week
