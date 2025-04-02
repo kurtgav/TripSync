@@ -123,6 +123,9 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   id: true,
   read: true,
   createdAt: true,
+  senderId: true,
+}).extend({
+  senderId: z.number().optional(),
 });
 
 export const insertReviewSchema = createInsertSchema(reviews).omit({
