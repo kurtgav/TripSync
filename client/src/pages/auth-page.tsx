@@ -66,13 +66,23 @@ export default function AuthPage() {
   }, [user, navigate]);
 
   const onLoginSubmit = (data) => {
-    loginMutation.mutate(data);
+    loginMutation.mutate(data, {
+      onSuccess: () => {
+        // Force redirect to home page on successful login
+        setTimeout(() => navigate('/'), 300);
+      }
+    });
   };
 
   const onRegisterSubmit = (data) => {
     const { confirmPassword, ...registerData } = data;
     registerData.isDriver = isDriver;
-    registerMutation.mutate(registerData);
+    registerMutation.mutate(registerData, {
+      onSuccess: () => {
+        // Force redirect to home page on successful registration
+        setTimeout(() => navigate('/'), 300);
+      }
+    });
   };
 
   const handleDriverToggle = (value) => {

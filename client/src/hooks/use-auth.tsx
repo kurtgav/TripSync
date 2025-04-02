@@ -56,7 +56,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
+      // Update user data in the cache to trigger authentication state change
       queryClient.setQueryData(["/api/user"], user);
+      // Invalidate any queries that depend on user data
+      queryClient.invalidateQueries({queryKey: ["/api/user"]});
+      
       toast({
         title: "Registration successful",
         description: `Welcome to TripSync, ${user.fullName}!`,
