@@ -28,7 +28,7 @@ export default function Dashboard() {
   
   const { data: myRides = [], isLoading: isLoadingRides } = useQuery({
     queryKey: [`/api/rides/driver/${user?.id}`],
-    enabled: !!user && user.isDriver,
+    enabled: !!user && !!user.isDriver,
   });
 
   const [upcomingBookings, setUpcomingBookings] = useState([]);
@@ -44,9 +44,9 @@ export default function Dashboard() {
       const past = [];
       
       for (const booking of myBookings) {
-        const ride = booking.ride;
-        if (ride) {
-          const departureTime = new Date(ride.departureTime);
+        // Check if the booking has a ride object attached
+        if (booking.ride) {
+          const departureTime = new Date(booking.ride.departureTime);
           if (departureTime > now) {
             upcoming.push(booking);
           } else {
@@ -57,6 +57,10 @@ export default function Dashboard() {
       
       setUpcomingBookings(upcoming);
       setPastBookings(past);
+    } else {
+      // Reset state if no bookings
+      setUpcomingBookings([]);
+      setPastBookings([]);
     }
     
     if (myRides && myRides.length > 0) {
@@ -74,6 +78,10 @@ export default function Dashboard() {
       
       setUpcomingRides(upcoming);
       setPastRides(past);
+    } else {
+      // Reset state if no rides
+      setUpcomingRides([]);
+      setPastRides([]);
     }
   }, [myBookings, myRides]);
 
@@ -210,18 +218,18 @@ export default function Dashboard() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Your Rating</CardTitle>
-                  <CardDescription>Based on {user.reviewCount} reviews</CardDescription>
+                  <CardDescription>Based on {user.reviewCount || 0} reviews</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center">
                     <div className="text-3xl font-bold text-primary mr-2">
-                      {user.rating.toFixed(1)}
+                      {(user.rating || 0).toFixed(1)}
                     </div>
                     <div className="flex text-yellow-400">
                       {Array(5).fill(0).map((_, i) => (
                         <Star 
                           key={i} 
-                          className={`h-5 w-5 ${i < Math.floor(user.rating) ? "fill-current" : ""}`} 
+                          className={`h-5 w-5 ${i < Math.floor(user.rating || 0) ? "fill-current" : ""}`} 
                         />
                       ))}
                     </div>

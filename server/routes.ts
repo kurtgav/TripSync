@@ -213,8 +213,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
+      // Get the bookings for the passenger
       const bookings = await storage.getBookingsByPassenger(req.user.id);
-      res.json(bookings);
+      
+      // Enhance bookings with ride information and driver details
+      const enhancedBookings = await Promise.all(bookings.map(async (booking) => {
+        const ride = await storage.getRide(booking.rideId);
+        let driver = null;
+        if (ride) {
+          driver = await storage.getUser(ride.driverId);
+          // Remove sensitive data from driver
+          if (driver) {
+            delete driver.password;
+          }
+        }
+        
+        return {
+          ...booking,
+          ride: ride ? {
+            ...ride,
+            driver
+          } : null
+        };
+      }));
+      
+      res.json(enhancedBookings);
     } catch (error) {
       console.error("Error getting passenger bookings:", error);
       res.status(500).send("Failed to get passenger bookings");
