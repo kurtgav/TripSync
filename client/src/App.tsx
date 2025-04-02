@@ -9,6 +9,8 @@ import Dashboard from "@/pages/dashboard";
 import FindRide from "@/pages/find-ride";
 import OfferRide from "@/pages/offer-ride";
 import Profile from "@/pages/profile";
+import Universities from "@/pages/universities";
+import Safety from "@/pages/safety";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +22,8 @@ function Router() {
       <ProtectedRoute path="/find-ride" component={FindRide} />
       <ProtectedRoute path="/offer-ride" component={OfferRide} />
       <ProtectedRoute path="/profile" component={Profile} />
+      <Route path="/universities" component={Universities} />
+      <Route path="/safety" component={Safety} />
       <Route component={NotFound} />
     </Switch>
   );
