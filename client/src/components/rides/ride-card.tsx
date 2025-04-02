@@ -3,13 +3,24 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Star, Calendar, Users } from "lucide-react";
+import { Star, Calendar, Users, Eye, X, AlertCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Ride, User } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import BookingManager from "./booking-manager";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface RideCardProps {
   ride: Ride;
@@ -20,6 +31,8 @@ export default function RideCard({ ride }: RideCardProps) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [driver, setDriver] = useState<User | null>(null);
+  const [isBookingManagerOpen, setIsBookingManagerOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   // Fetch driver details
   const { data: driverData } = useQuery<User>({
@@ -33,6 +46,7 @@ export default function RideCard({ ride }: RideCardProps) {
     }
   }, [driverData]);
 
+  // Mutation for booking a ride
   const bookingMutation = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/bookings", { rideId: ride.id });
@@ -52,6 +66,31 @@ export default function RideCard({ ride }: RideCardProps) {
         description: error.message,
         variant: "destructive",
       });
+    },
+  });
+  
+  // Mutation for cancelling a ride
+  const cancelRideMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("DELETE", `/api/rides/${ride.id}`);
+      return res.status === 204; // No content success
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rides"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/rides/driver/${user?.id}`] });
+      toast({
+        title: "Ride cancelled",
+        description: "Your ride has been cancelled successfully.",
+      });
+      setIsCancelDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Cancellation failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsCancelDialogOpen(false);
     },
   });
 
@@ -154,15 +193,73 @@ export default function RideCard({ ride }: RideCardProps) {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="px-4 py-3 bg-gray-50 flex justify-end">
-        <Button 
-          size="sm"
-          onClick={handleBookRide}
-          disabled={bookingMutation.isPending || ride.availableSeats < 1}
-        >
-          {bookingMutation.isPending ? "Booking..." : "Book This Ride"}
-        </Button>
+      <CardFooter className="px-4 py-3 bg-gray-50 flex justify-between items-center">
+        {user && user.id === ride.driverId ? (
+          // Driver controls
+          <div className="flex space-x-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsBookingManagerOpen(true)}
+            >
+              <Eye className="h-4 w-4 mr-1" />
+              View Bookings
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => setIsCancelDialogOpen(true)}
+              disabled={cancelRideMutation.isPending}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Cancel Ride
+            </Button>
+          </div>
+        ) : (
+          // Empty div to keep flexbox spacing
+          <div></div>
+        )}
+        
+        {/* Passenger controls or general booking button */}
+        {user && user.id !== ride.driverId && (
+          <Button 
+            size="sm"
+            onClick={handleBookRide}
+            disabled={bookingMutation.isPending || ride.availableSeats < 1}
+          >
+            {bookingMutation.isPending ? "Booking..." : "Book This Ride"}
+          </Button>
+        )}
       </CardFooter>
+
+      {/* Booking Manager Dialog */}
+      <BookingManager 
+        rideId={ride.id}
+        isOpen={isBookingManagerOpen}
+        onClose={() => setIsBookingManagerOpen(false)}
+      />
+
+      {/* Cancel Ride Dialog */}
+      <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel this ride?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will cancel your ride and notify all passengers who have booked.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => cancelRideMutation.mutate()}
+              disabled={cancelRideMutation.isPending}
+            >
+              {cancelRideMutation.isPending ? "Cancelling..." : "Yes, cancel ride"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

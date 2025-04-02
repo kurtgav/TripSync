@@ -151,6 +151,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).send("You can only delete your own rides");
       }
       
+      // Get all bookings for this ride
+      const bookings = await storage.getBookingsByRide(id);
+      
+      // Update all bookings to cancelled
+      for (const booking of bookings) {
+        if (booking.status === "confirmed" || booking.status === "pending") {
+          await storage.updateBooking(booking.id, { status: "cancelled" });
+        }
+      }
+      
       const success = await storage.deleteRide(id);
       if (success) {
         res.sendStatus(204);
@@ -282,8 +292,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).send("You can only update your own bookings");
       }
       
-      // If driver is confirming, passenger can't cancel afterwards
-      // If passenger is cancelling, driver approval not needed
+      // If confirming a booking, reduce available seats
+      if (status === "confirmed" && booking.status !== "confirmed") {
+        await storage.updateRide(ride.id, { 
+          availableSeats: Math.max(0, ride.availableSeats - 1)
+        });
+      }
+      
+      // If cancelling a previously confirmed booking, increase available seats
+      if (status === "cancelled" && booking.status === "confirmed") {
+        await storage.updateRide(ride.id, { 
+          availableSeats: ride.availableSeats + 1 
+        });
+      }
+      
       const updatedBooking = await storage.updateBooking(id, { status });
       res.json(updatedBooking);
     } catch (error) {
