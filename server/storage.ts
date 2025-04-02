@@ -2,7 +2,12 @@ import { users, rides, bookings, messages, reviews } from "@shared/schema";
 import type { User, InsertUser, Ride, InsertRide, Booking, InsertBooking, Message, InsertMessage, Review, InsertReview } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { db } from "./db";
+import { eq, and, or, desc } from "drizzle-orm";
+import { pool } from "./db";
 
+const PostgresSessionStore = connectPg(session);
 const MemoryStore = createMemoryStore(session);
 
 // Storage interface
@@ -288,4 +293,236 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.SessionStore;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({ 
+      conObject: { connectionString: process.env.DATABASE_URL },
+      createTableIfMissing: true 
+    });
+  }
+
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(
+      eq(users.username, username)
+    );
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(
+      eq(users.email, email)
+    );
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values({
+      ...insertUser,
+      rating: 0,
+      reviewCount: 0
+    }).returning();
+    return user;
+  }
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    // Don't allow changing id or createdAt
+    const { id: _, createdAt: __, ...updateData } = userData;
+    
+    const [updatedUser] = await db.update(users)
+      .set(updateData)
+      .where(eq(users.id, id))
+      .returning();
+    
+    return updatedUser;
+  }
+
+  // Ride methods
+  async getRide(id: number): Promise<Ride | undefined> {
+    const [ride] = await db.select().from(rides).where(eq(rides.id, id));
+    return ride;
+  }
+
+  async getRides(): Promise<Ride[]> {
+    return await db.select().from(rides).where(eq(rides.status, "active"));
+  }
+
+  async getRidesByDriver(driverId: number): Promise<Ride[]> {
+    return await db.select().from(rides).where(eq(rides.driverId, driverId));
+  }
+
+  async getRidesByUniversity(university: string): Promise<Ride[]> {
+    // This requires a join with the users table
+    const universityDrivers = await db.select({ id: users.id })
+      .from(users)
+      .where(and(
+        eq(users.university, university),
+        eq(users.isDriver, true)
+      ));
+    
+    const driverIds = universityDrivers.map(driver => driver.id);
+    
+    if (driverIds.length === 0) {
+      return [];
+    }
+    
+    return await db.select().from(rides)
+      .where(and(
+        eq(rides.status, "active"),
+        // Use "in" operator to check if driverId is in the list of university drivers
+        rides.driverId.in(driverIds)
+      ));
+  }
+
+  async createRide(insertRide: InsertRide): Promise<Ride> {
+    console.log("Creating ride:", insertRide);  // Debug log
+    const [ride] = await db.insert(rides).values(insertRide).returning();
+    return ride;
+  }
+
+  async updateRide(id: number, rideData: Partial<Ride>): Promise<Ride | undefined> {
+    // Don't allow changing id or createdAt
+    const { id: _, createdAt: __, ...updateData } = rideData;
+    
+    const [updatedRide] = await db.update(rides)
+      .set(updateData)
+      .where(eq(rides.id, id))
+      .returning();
+    
+    return updatedRide;
+  }
+
+  async deleteRide(id: number): Promise<boolean> {
+    const result = await db.delete(rides).where(eq(rides.id, id));
+    return result.count > 0;
+  }
+
+  // Booking methods
+  async getBooking(id: number): Promise<Booking | undefined> {
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    return booking;
+  }
+
+  async getBookingsByRide(rideId: number): Promise<Booking[]> {
+    return await db.select().from(bookings).where(eq(bookings.rideId, rideId));
+  }
+
+  async getBookingsByPassenger(passengerId: number): Promise<Booking[]> {
+    return await db.select().from(bookings).where(eq(bookings.passengerId, passengerId));
+  }
+
+  async createBooking(insertBooking: InsertBooking): Promise<Booking> {
+    const [booking] = await db.insert(bookings).values(insertBooking).returning();
+    
+    // Update ride available seats
+    const ride = await this.getRide(booking.rideId);
+    if (ride) {
+      await db.update(rides)
+        .set({ availableSeats: ride.availableSeats - 1 })
+        .where(eq(rides.id, ride.id));
+    }
+    
+    return booking;
+  }
+
+  async updateBooking(id: number, bookingData: Partial<Booking>): Promise<Booking | undefined> {
+    // Don't allow changing id, rideId, passengerId, or createdAt
+    const { id: _, rideId: __, passengerId: ___, createdAt: ____, ...updateData } = bookingData;
+    
+    const [updatedBooking] = await db.update(bookings)
+      .set(updateData)
+      .where(eq(bookings.id, id))
+      .returning();
+    
+    return updatedBooking;
+  }
+
+  async deleteBooking(id: number): Promise<boolean> {
+    const booking = await this.getBooking(id);
+    if (!booking) return false;
+    
+    // Restore ride available seats
+    const ride = await this.getRide(booking.rideId);
+    if (ride) {
+      await db.update(rides)
+        .set({ availableSeats: ride.availableSeats + 1 })
+        .where(eq(rides.id, ride.id));
+    }
+    
+    const result = await db.delete(bookings).where(eq(bookings.id, id));
+    return result.count > 0;
+  }
+
+  // Message methods
+  async getMessage(id: number): Promise<Message | undefined> {
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    return message;
+  }
+
+  async getMessagesBetweenUsers(user1Id: number, user2Id: number): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(
+        and(
+          // Either user1 is the sender and user2 is the receiver
+          and(eq(messages.senderId, user1Id), eq(messages.receiverId, user2Id)),
+          // Or user2 is the sender and user1 is the receiver
+          and(eq(messages.senderId, user2Id), eq(messages.receiverId, user1Id))
+        )
+      )
+      .orderBy(messages.createdAt);
+  }
+
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    const [message] = await db.insert(messages)
+      .values({ ...insertMessage, read: false })
+      .returning();
+    
+    return message;
+  }
+
+  async markMessageAsRead(id: number): Promise<boolean> {
+    const result = await db.update(messages)
+      .set({ read: true })
+      .where(eq(messages.id, id));
+    
+    return result.count > 0;
+  }
+
+  // Review methods
+  async getReview(id: number): Promise<Review | undefined> {
+    const [review] = await db.select().from(reviews).where(eq(reviews.id, id));
+    return review;
+  }
+
+  async getReviewsByReviewee(revieweeId: number): Promise<Review[]> {
+    return await db.select().from(reviews).where(eq(reviews.revieweeId, revieweeId));
+  }
+
+  async createReview(insertReview: InsertReview): Promise<Review> {
+    const [review] = await db.insert(reviews).values(insertReview).returning();
+    
+    // Update user rating
+    const userReviews = await this.getReviewsByReviewee(review.revieweeId);
+    const totalRating = userReviews.reduce((acc, review) => acc + review.rating, 0);
+    const newRating = totalRating / userReviews.length;
+    
+    await db.update(users)
+      .set({ 
+        rating: parseFloat(newRating.toFixed(1)), 
+        reviewCount: userReviews.length 
+      })
+      .where(eq(users.id, review.revieweeId));
+    
+    return review;
+  }
+}
+
+// Switch to database storage
+export const storage = new DatabaseStorage();

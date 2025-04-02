@@ -83,7 +83,10 @@ export const insertRideSchema = createInsertSchema(rides).omit({
   createdAt: true,
 }).extend({
   departureTime: z.date(),
-  recurringDays: z.string().optional(),
+  status: z.string().default("active"),
+  recurring: z.boolean().default(false),
+  recurringDays: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
 });
 
 export const insertBookingSchema = createInsertSchema(bookings).omit({

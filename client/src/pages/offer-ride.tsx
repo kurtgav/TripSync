@@ -94,22 +94,29 @@ export default function OfferRide() {
 
   const createRideMutation = useMutation({
     mutationFn: async (values) => {
+      if (!user || !user.id) {
+        throw new Error("You must be logged in to offer a ride");
+      }
+      
       // Combine date and time into a single datetime
       const dateTimeString = `${format(values.departureDate, "yyyy-MM-dd")}T${values.departureTime}:00`;
       const departureTime = new Date(dateTimeString);
       
       // Prepare data for API
       const rideData = {
+        driverId: user.id,
         origin: values.origin,
         destination: values.destination,
         departureTime,
-        price: parseInt(values.price),
-        availableSeats: parseInt(values.availableSeats),
-        description: values.description || undefined,
-        recurring: values.recurring,
-        recurringDays: values.recurringDays?.length > 0 ? values.recurringDays.join(",") : undefined,
+        price: Number(values.price),
+        availableSeats: Number(values.availableSeats),
+        description: values.description || null,
+        recurring: values.recurring || false,
+        recurringDays: values.recurringDays?.length > 0 ? values.recurringDays.join(",") : null,
+        status: "active"
       };
       
+      console.log("Sending ride data:", rideData);
       const res = await apiRequest("POST", "/api/rides", rideData);
       return await res.json();
     },

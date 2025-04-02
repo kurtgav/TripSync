@@ -62,22 +62,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      // Validate input
-      const validatedData = insertRideSchema.parse(req.body);
+      console.log("Received ride data:", req.body);
       
       // Check if user is a driver
       if (!req.user.isDriver) {
         return res.status(403).send("Only drivers can create rides");
       }
       
-      const ride = await storage.createRide({
-        ...validatedData,
-        driverId: req.user.id
+      // Validate input - ensure driverId matches current user
+      if (req.body.driverId && req.body.driverId !== req.user.id) {
+        return res.status(400).send("Driver ID must match the current user's ID");
+      }
+      
+      // Validate and parse the data
+      const validatedData = insertRideSchema.parse({
+        ...req.body,
+        driverId: req.user.id, // Always use the authenticated user's ID
+        status: "active" // Ensure status is set
       });
+      
+      console.log("Validated ride data:", validatedData);
+      
+      const ride = await storage.createRide(validatedData);
+      console.log("Created ride:", ride);
       
       res.status(201).json(ride);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation error:", error.errors);
         return res.status(400).json({ errors: error.errors });
       }
       console.error("Error creating ride:", error);
