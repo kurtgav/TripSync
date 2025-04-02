@@ -35,7 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { MapPin, Calendar as CalendarIcon, Clock, Car, Users, Check, DollarSign } from "lucide-react";
 import { z } from "zod";
 
@@ -98,16 +98,23 @@ export default function OfferRide() {
         throw new Error("You must be logged in to offer a ride");
       }
       
-      // Combine date and time into a single datetime
-      const dateTimeString = `${format(values.departureDate, "yyyy-MM-dd")}T${values.departureTime}:00`;
-      const departureTime = new Date(dateTimeString);
+      // Format the date and time properly to avoid timezone issues
+      const formattedDate = format(values.departureDate, "yyyy-MM-dd");
+      const formattedTime = values.departureTime;
+      const dateTimeString = `${formattedDate}T${formattedTime}:00`;
+      
+      // Create a proper Date object from the string
+      let departureTime = new Date(dateTimeString);
+      
+      // Convert to ISO string for proper serialization
+      const isoString = departureTime.toISOString();
       
       // Prepare data for API
       const rideData = {
         driverId: user.id,
         origin: values.origin,
         destination: values.destination,
-        departureTime,
+        departureTime: isoString, // Send ISO string instead of Date object to avoid serialization issues
         price: Number(values.price),
         availableSeats: Number(values.availableSeats),
         description: values.description || null,

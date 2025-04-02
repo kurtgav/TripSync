@@ -383,8 +383,26 @@ export class DatabaseStorage implements IStorage {
 
   async createRide(insertRide: InsertRide): Promise<Ride> {
     console.log("Creating ride:", insertRide);  // Debug log
-    const [ride] = await db.insert(rides).values(insertRide).returning();
-    return ride;
+    
+    // Ensure all nullable fields are explicitly set to null rather than undefined
+    const cleanData = {
+      ...insertRide,
+      status: insertRide.status || "active",
+      description: insertRide.description ?? null,
+      recurring: insertRide.recurring ?? false,
+      recurringDays: insertRide.recurringDays ?? null
+    };
+    
+    console.log("Clean ride data for DB:", cleanData);
+    
+    try {
+      const [ride] = await db.insert(rides).values(cleanData).returning();
+      console.log("Ride created successfully:", ride);
+      return ride;
+    } catch (error) {
+      console.error("Database error creating ride:", error);
+      throw error;
+    }
   }
 
   async updateRide(id: number, rideData: Partial<Ride>): Promise<Ride | undefined> {

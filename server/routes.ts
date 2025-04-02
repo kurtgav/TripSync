@@ -75,8 +75,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Validate and parse the data
+      // Convert departureTime string to a Date object if it's a string
+      let dataToValidate = { ...req.body };
+      
+      if (typeof dataToValidate.departureTime === 'string') {
+        console.log("Converting departure time from:", dataToValidate.departureTime);
+        // Parse the ISO date string to create a Date object
+        dataToValidate.departureTime = new Date(dataToValidate.departureTime);
+        console.log("Converted to Date object:", dataToValidate.departureTime);
+      }
+      
       const validatedData = insertRideSchema.parse({
-        ...req.body,
+        ...dataToValidate,
         driverId: req.user.id, // Always use the authenticated user's ID
         status: "active" // Ensure status is set
       });
