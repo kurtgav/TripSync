@@ -49,7 +49,15 @@ export default function RideCard({ ride }: RideCardProps) {
   // Mutation for booking a ride
   const bookingMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/bookings", { rideId: ride.id });
+      if (!user) throw new Error("You must be logged in to book a ride");
+      
+      const bookingData = {
+        rideId: ride.id,
+        passengerId: user.id,
+        status: "pending"
+      };
+      
+      const res = await apiRequest("POST", "/api/bookings", bookingData);
       return await res.json();
     },
     onSuccess: () => {
@@ -61,9 +69,13 @@ export default function RideCard({ ride }: RideCardProps) {
       });
     },
     onError: (error: Error) => {
+      let errorMessage = error.message;
+      if (error.message.includes("ZodError")) {
+        errorMessage = "Missing required booking information. Please try again.";
+      }
       toast({
         title: "Booking failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     },

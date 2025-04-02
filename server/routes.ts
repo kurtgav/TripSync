@@ -228,7 +228,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       // Validate input
-      const validatedData = insertBookingSchema.parse(req.body);
+      const validatedData = insertBookingSchema.parse({
+        ...req.body,
+        passengerId: req.user.id,  // Set passengerId from logged in user
+        status: "pending"          // Default status to pending
+      });
       
       // Check if ride exists and has available seats
       const ride = await storage.getRide(validatedData.rideId);
@@ -256,9 +260,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).send("You have already booked this ride");
       }
       
-      const booking = await storage.createBooking({
-        ...validatedData,
-        passengerId: req.user.id
+      // Use a transaction to create booking and update ride's available seats
+      const booking = await storage.createBooking(validatedData);
+      
+      // Decrement the available seats by 1
+      await storage.updateRide(ride.id, {
+        availableSeats: ride.availableSeats - 1
       });
       
       res.status(201).json(booking);
@@ -299,18 +306,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).send("You can only update your own bookings");
       }
       
-      // If confirming a booking, reduce available seats
-      if (status === "confirmed" && booking.status !== "confirmed") {
-        await storage.updateRide(ride.id, { 
-          availableSeats: Math.max(0, ride.availableSeats - 1)
-        });
-      }
-      
-      // If cancelling a previously confirmed booking, increase available seats
-      if (status === "cancelled" && booking.status === "confirmed") {
-        await storage.updateRide(ride.id, { 
-          availableSeats: ride.availableSeats + 1 
-        });
+      // Handle seat availability updates based on status transitions
+      if (booking.status !== status) {
+        // If cancelling a booking, add back a seat
+        if (status === "cancelled" && 
+            (booking.status === "confirmed" || booking.status === "pending")) {
+          await storage.updateRide(ride.id, { 
+            availableSeats: ride.availableSeats + 1 
+          });
+        }
+        
+        // If confirming a pending booking, seats already reserved 
+        // in our updated create booking logic, so no action needed
       }
       
       const updatedBooking = await storage.updateBooking(id, { status });

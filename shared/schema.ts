@@ -115,6 +115,8 @@ export const insertRideSchema = createInsertSchema(rides).omit({
 export const insertBookingSchema = createInsertSchema(bookings).omit({
   id: true,
   createdAt: true,
+}).extend({
+  status: z.enum(["pending", "confirmed", "cancelled", "completed"]).default("pending")
 });
 
 export const insertMessageSchema = createInsertSchema(messages).omit({
