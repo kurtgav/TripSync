@@ -1,5 +1,13 @@
-import { users, rides, bookings, messages, reviews } from "@shared/schema";
-import type { User, InsertUser, Ride, InsertRide, Booking, InsertBooking, Message, InsertMessage, Review, InsertReview } from "@shared/schema";
+import { users, rides, bookings, messages, reviews, emergencyContacts, emergencyAlerts } from "@shared/schema";
+import type { 
+  User, InsertUser, 
+  Ride, InsertRide, 
+  Booking, InsertBooking, 
+  Message, InsertMessage, 
+  Review, InsertReview,
+  EmergencyContact, InsertEmergencyContact,
+  EmergencyAlert, InsertEmergencyAlert
+} from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import connectPg from "connect-pg-simple";
@@ -47,8 +55,22 @@ export interface IStorage {
   getReviewsByReviewee(revieweeId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
   
+  // Emergency contact operations
+  getEmergencyContacts(userId: number): Promise<EmergencyContact[]>;
+  getEmergencyContact(id: number): Promise<EmergencyContact | undefined>;
+  createEmergencyContact(contact: InsertEmergencyContact): Promise<EmergencyContact>;
+  updateEmergencyContact(id: number, contact: Partial<EmergencyContact>): Promise<EmergencyContact | undefined>;
+  deleteEmergencyContact(id: number): Promise<boolean>;
+  
+  // Emergency alert operations
+  getEmergencyAlerts(userId: number): Promise<EmergencyAlert[]>;
+  getActiveEmergencyAlerts(): Promise<EmergencyAlert[]>;
+  getEmergencyAlert(id: number): Promise<EmergencyAlert | undefined>;
+  createEmergencyAlert(alert: InsertEmergencyAlert): Promise<EmergencyAlert>;
+  resolveEmergencyAlert(id: number): Promise<boolean>;
+  
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -57,13 +79,17 @@ export class MemStorage implements IStorage {
   private bookings: Map<number, Booking>;
   private messages: Map<number, Message>;
   private reviews: Map<number, Review>;
-  sessionStore: session.SessionStore;
+  private emergencyContacts: Map<number, EmergencyContact>;
+  private emergencyAlerts: Map<number, EmergencyAlert>;
+  sessionStore: session.Store;
   
   private userIdCounter: number;
   private rideIdCounter: number;
   private bookingIdCounter: number;
   private messageIdCounter: number;
   private reviewIdCounter: number;
+  private emergencyContactIdCounter: number;
+  private emergencyAlertIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -71,12 +97,16 @@ export class MemStorage implements IStorage {
     this.bookings = new Map();
     this.messages = new Map();
     this.reviews = new Map();
+    this.emergencyContacts = new Map();
+    this.emergencyAlerts = new Map();
     
     this.userIdCounter = 1;
     this.rideIdCounter = 1;
     this.bookingIdCounter = 1;
     this.messageIdCounter = 1;
     this.reviewIdCounter = 1;
+    this.emergencyContactIdCounter = 1;
+    this.emergencyAlertIdCounter = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
@@ -291,14 +321,80 @@ export class MemStorage implements IStorage {
     
     return review;
   }
+  
+  // Emergency Contact methods
+  async getEmergencyContacts(userId: number): Promise<EmergencyContact[]> {
+    return Array.from(this.emergencyContacts.values()).filter(
+      (contact) => contact.userId === userId
+    );
+  }
+  
+  async getEmergencyContact(id: number): Promise<EmergencyContact | undefined> {
+    return this.emergencyContacts.get(id);
+  }
+  
+  async createEmergencyContact(insertContact: InsertEmergencyContact): Promise<EmergencyContact> {
+    const id = this.emergencyContactIdCounter++;
+    const now = new Date();
+    const contact: EmergencyContact = { ...insertContact, id, createdAt: now };
+    this.emergencyContacts.set(id, contact);
+    return contact;
+  }
+  
+  async updateEmergencyContact(id: number, contactData: Partial<EmergencyContact>): Promise<EmergencyContact | undefined> {
+    const contact = this.emergencyContacts.get(id);
+    if (!contact) return undefined;
+    
+    const updatedContact = { ...contact, ...contactData };
+    this.emergencyContacts.set(id, updatedContact);
+    return updatedContact;
+  }
+  
+  async deleteEmergencyContact(id: number): Promise<boolean> {
+    return this.emergencyContacts.delete(id);
+  }
+  
+  // Emergency Alert methods
+  async getEmergencyAlerts(userId: number): Promise<EmergencyAlert[]> {
+    return Array.from(this.emergencyAlerts.values()).filter(
+      (alert) => alert.userId === userId
+    );
+  }
+  
+  async getActiveEmergencyAlerts(): Promise<EmergencyAlert[]> {
+    return Array.from(this.emergencyAlerts.values()).filter(
+      (alert) => !alert.resolvedAt
+    );
+  }
+  
+  async getEmergencyAlert(id: number): Promise<EmergencyAlert | undefined> {
+    return this.emergencyAlerts.get(id);
+  }
+  
+  async createEmergencyAlert(insertAlert: InsertEmergencyAlert): Promise<EmergencyAlert> {
+    const id = this.emergencyAlertIdCounter++;
+    const now = new Date();
+    const alert: EmergencyAlert = { ...insertAlert, id, resolvedAt: null, createdAt: now };
+    this.emergencyAlerts.set(id, alert);
+    return alert;
+  }
+  
+  async resolveEmergencyAlert(id: number): Promise<boolean> {
+    const alert = this.emergencyAlerts.get(id);
+    if (!alert) return false;
+    
+    alert.resolvedAt = new Date();
+    this.emergencyAlerts.set(id, alert);
+    return true;
+  }
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({ 
-      conObject: { connectionString: process.env.DATABASE_URL },
+      pool: pool,
       createTableIfMissing: true 
     });
   }
@@ -539,6 +635,86 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, review.revieweeId));
     
     return review;
+  }
+  
+  // Emergency Contact methods
+  async getEmergencyContacts(userId: number): Promise<EmergencyContact[]> {
+    return await db.select()
+      .from(emergencyContacts)
+      .where(eq(emergencyContacts.userId, userId));
+  }
+  
+  async getEmergencyContact(id: number): Promise<EmergencyContact | undefined> {
+    const [contact] = await db.select()
+      .from(emergencyContacts)
+      .where(eq(emergencyContacts.id, id));
+    return contact;
+  }
+  
+  async createEmergencyContact(insertContact: InsertEmergencyContact): Promise<EmergencyContact> {
+    const [contact] = await db.insert(emergencyContacts)
+      .values(insertContact)
+      .returning();
+    return contact;
+  }
+  
+  async updateEmergencyContact(id: number, contactData: Partial<EmergencyContact>): Promise<EmergencyContact | undefined> {
+    // Don't allow changing id, userId, or createdAt
+    const { id: _, userId: __, createdAt: ___, ...updateData } = contactData;
+    
+    const [updatedContact] = await db.update(emergencyContacts)
+      .set(updateData)
+      .where(eq(emergencyContacts.id, id))
+      .returning();
+    
+    return updatedContact;
+  }
+  
+  async deleteEmergencyContact(id: number): Promise<boolean> {
+    const result = await db.delete(emergencyContacts)
+      .where(eq(emergencyContacts.id, id));
+    return result.rowCount > 0;
+  }
+  
+  // Emergency Alert methods
+  async getEmergencyAlerts(userId: number): Promise<EmergencyAlert[]> {
+    return await db.select()
+      .from(emergencyAlerts)
+      .where(eq(emergencyAlerts.userId, userId));
+  }
+  
+  async getActiveEmergencyAlerts(): Promise<EmergencyAlert[]> {
+    return await db.select()
+      .from(emergencyAlerts)
+      .where(eq(emergencyAlerts.status, "active"));
+  }
+  
+  async getEmergencyAlert(id: number): Promise<EmergencyAlert | undefined> {
+    const [alert] = await db.select()
+      .from(emergencyAlerts)
+      .where(eq(emergencyAlerts.id, id));
+    return alert;
+  }
+  
+  async createEmergencyAlert(insertAlert: InsertEmergencyAlert): Promise<EmergencyAlert> {
+    const [alert] = await db.insert(emergencyAlerts)
+      .values({
+        ...insertAlert,
+        status: "active"
+      })
+      .returning();
+    return alert;
+  }
+  
+  async resolveEmergencyAlert(id: number): Promise<boolean> {
+    const now = new Date();
+    const result = await db.update(emergencyAlerts)
+      .set({ 
+        status: "resolved",
+        resolvedAt: now
+      })
+      .where(eq(emergencyAlerts.id, id));
+    return result.rowCount > 0;
   }
 }
 

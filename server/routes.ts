@@ -2,7 +2,14 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { insertRideSchema, insertBookingSchema, insertMessageSchema, insertReviewSchema } from "@shared/schema";
+import { 
+  insertRideSchema, 
+  insertBookingSchema, 
+  insertMessageSchema, 
+  insertReviewSchema,
+  insertEmergencyContactSchema,
+  insertEmergencyAlertSchema
+} from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -499,6 +506,206 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).send("Failed to update profile");
+    }
+  });
+
+  // Emergency Contacts routes
+  app.get("/api/emergency-contacts", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to view emergency contacts");
+    }
+
+    try {
+      const contacts = await storage.getEmergencyContacts(req.user.id);
+      res.json(contacts);
+    } catch (error) {
+      console.error("Error getting emergency contacts:", error);
+      res.status(500).send("Failed to get emergency contacts");
+    }
+  });
+
+  app.post("/api/emergency-contacts", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to add emergency contacts");
+    }
+
+    try {
+      // Validate input
+      const validatedData = insertEmergencyContactSchema.parse({
+        ...req.body,
+        userId: req.user.id
+      });
+      
+      const contact = await storage.createEmergencyContact(validatedData);
+      res.status(201).json(contact);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating emergency contact:", error);
+      res.status(500).send("Failed to create emergency contact");
+    }
+  });
+
+  app.put("/api/emergency-contacts/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to update emergency contacts");
+    }
+
+    try {
+      const id = parseInt(req.params.id);
+      const contact = await storage.getEmergencyContact(id);
+      
+      if (!contact) {
+        return res.status(404).send("Emergency contact not found");
+      }
+      
+      // Check if user owns this contact
+      if (contact.userId !== req.user.id) {
+        return res.status(403).send("You can only update your own emergency contacts");
+      }
+      
+      const updatedContact = await storage.updateEmergencyContact(id, req.body);
+      res.json(updatedContact);
+    } catch (error) {
+      console.error("Error updating emergency contact:", error);
+      res.status(500).send("Failed to update emergency contact");
+    }
+  });
+
+  app.delete("/api/emergency-contacts/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to delete emergency contacts");
+    }
+
+    try {
+      const id = parseInt(req.params.id);
+      const contact = await storage.getEmergencyContact(id);
+      
+      if (!contact) {
+        return res.status(404).send("Emergency contact not found");
+      }
+      
+      // Check if user owns this contact
+      if (contact.userId !== req.user.id) {
+        return res.status(403).send("You can only delete your own emergency contacts");
+      }
+      
+      const success = await storage.deleteEmergencyContact(id);
+      if (success) {
+        res.sendStatus(204);
+      } else {
+        res.status(500).send("Failed to delete emergency contact");
+      }
+    } catch (error) {
+      console.error("Error deleting emergency contact:", error);
+      res.status(500).send("Failed to delete emergency contact");
+    }
+  });
+
+  // Emergency Alerts routes
+  app.get("/api/emergency-alerts", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to view emergency alerts");
+    }
+
+    try {
+      // Check if user is admin (this is a placeholder, implement proper admin check)
+      const isAdmin = req.user.isAdmin; // You would need to add this field to your user model
+      
+      // Regular users can only see their own alerts
+      if (!isAdmin) {
+        const alerts = await storage.getEmergencyAlerts(req.user.id);
+        return res.json(alerts);
+      }
+      
+      // Admins can see all active alerts
+      const activeAlerts = await storage.getActiveEmergencyAlerts();
+      res.json(activeAlerts);
+    } catch (error) {
+      console.error("Error getting emergency alerts:", error);
+      res.status(500).send("Failed to get emergency alerts");
+    }
+  });
+
+  app.post("/api/emergency-alerts", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to create emergency alerts");
+    }
+
+    try {
+      // Validate input
+      const validatedData = insertEmergencyAlertSchema.parse({
+        ...req.body,
+        userId: req.user.id
+      });
+      
+      // Check if ride exists
+      const ride = await storage.getRide(validatedData.rideId);
+      if (!ride) {
+        return res.status(404).send("Ride not found");
+      }
+      
+      // Check if user is either the driver or a passenger of this ride
+      const isDriver = ride.driverId === req.user.id;
+      
+      if (!isDriver) {
+        const bookings = await storage.getBookingsByPassenger(req.user.id);
+        const isPassenger = bookings.some(booking => 
+          booking.rideId === validatedData.rideId && 
+          (booking.status === "confirmed" || booking.status === "completed")
+        );
+        
+        if (!isPassenger) {
+          return res.status(403).send("You can only create alerts for rides you're participating in");
+        }
+      }
+      
+      const alert = await storage.createEmergencyAlert(validatedData);
+      
+      // TODO: Send notifications to emergency contacts
+      // This would typically involve sending SMS or email notifications
+      
+      res.status(201).json(alert);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating emergency alert:", error);
+      res.status(500).send("Failed to create emergency alert");
+    }
+  });
+
+  app.put("/api/emergency-alerts/:id/resolve", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to resolve emergency alerts");
+    }
+
+    try {
+      const id = parseInt(req.params.id);
+      const alert = await storage.getEmergencyAlert(id);
+      
+      if (!alert) {
+        return res.status(404).send("Emergency alert not found");
+      }
+      
+      // Check if user is admin or the creator of the alert
+      const isAdmin = req.user.isAdmin; // You would need to add this field to your user model
+      const isCreator = alert.userId === req.user.id;
+      
+      if (!isAdmin && !isCreator) {
+        return res.status(403).send("You can only resolve your own alerts or must be an admin");
+      }
+      
+      const success = await storage.resolveEmergencyAlert(id);
+      if (success) {
+        res.sendStatus(204);
+      } else {
+        res.status(500).send("Failed to resolve emergency alert");
+      }
+    } catch (error) {
+      console.error("Error resolving emergency alert:", error);
+      res.status(500).send("Failed to resolve emergency alert");
     }
   });
 

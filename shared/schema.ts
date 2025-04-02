@@ -62,6 +62,29 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const emergencyContacts = pgTable("emergency_contacts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: text("name").notNull(),
+  relationship: text("relationship").notNull(),
+  phone: text("phone").notNull(),
+  email: text("email"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const emergencyAlerts = pgTable("emergency_alerts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  rideId: integer("ride_id").notNull(),
+  type: text("type").notNull(), // medical, safety, accident, other
+  description: text("description"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  status: text("status").notNull().default("active"), // active, resolved
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -107,6 +130,24 @@ export const insertReviewSchema = createInsertSchema(reviews).omit({
   rating: z.number().min(1).max(5),
 });
 
+export const insertEmergencyContactSchema = createInsertSchema(emergencyContacts).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  email: z.string().email().optional(),
+});
+
+export const insertEmergencyAlertSchema = createInsertSchema(emergencyAlerts).omit({
+  id: true,
+  createdAt: true,
+  resolvedAt: true,
+}).extend({
+  type: z.enum(["medical", "safety", "accident", "other"]),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
+  description: z.string().optional(),
+});
+
 // Auth schemas
 export const loginSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -119,6 +160,8 @@ export type InsertRide = z.infer<typeof insertRideSchema>;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type InsertEmergencyContact = z.infer<typeof insertEmergencyContactSchema>;
+export type InsertEmergencyAlert = z.infer<typeof insertEmergencyAlertSchema>;
 export type LoginData = z.infer<typeof loginSchema>;
 
 export type User = typeof users.$inferSelect;
@@ -126,6 +169,8 @@ export type Ride = typeof rides.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
+export type EmergencyContact = typeof emergencyContacts.$inferSelect;
+export type EmergencyAlert = typeof emergencyAlerts.$inferSelect;
 
 // University options
 export const UNIVERSITIES = [

@@ -9,6 +9,7 @@ import { Helmet } from "react-helmet";
 import { z } from "zod";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
+import EmergencyContacts from "@/components/emergency/emergency-contacts";
 import {
   Card,
   CardContent,
@@ -43,7 +44,7 @@ import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { Review } from "@shared/schema";
 import { UNIVERSITIES } from "@/lib/data";
-import { User, Settings, Car, Star, Shield, Clock } from "lucide-react";
+import { User, Settings, Car, Star, Shield, Clock, AlertCircle } from "lucide-react";
 
 // Profile update schema
 const profileFormSchema = z.object({
@@ -72,6 +73,7 @@ export default function Profile() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("profile");
   const [isDriver, setIsDriver] = useState(user?.isDriver || false);
+  const [emergencyTab, setEmergencyTab] = useState("contacts");
   
   // Get user reviews
   const { data: reviews = [] } = useQuery<Review[]>({
@@ -322,7 +324,7 @@ export default function Profile() {
               
               <div className="md:w-2/3">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid grid-cols-2 md:w-[400px] mb-6">
+                  <TabsList className="grid grid-cols-3 md:w-[600px] mb-6">
                     <TabsTrigger value="profile" className="flex items-center">
                       <User className="h-4 w-4 mr-2" />
                       Edit Profile
@@ -330,6 +332,10 @@ export default function Profile() {
                     <TabsTrigger value="settings" className="flex items-center">
                       <Settings className="h-4 w-4 mr-2" />
                       Account Settings
+                    </TabsTrigger>
+                    <TabsTrigger value="emergency" className="flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      Emergency
                     </TabsTrigger>
                   </TabsList>
                   
@@ -687,6 +693,20 @@ export default function Profile() {
                         </CardContent>
                       </Card>
                     </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="emergency">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Emergency Contacts</CardTitle>
+                        <CardDescription>
+                          Manage your emergency contacts who will be notified in case of emergencies
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <EmergencyContacts />
+                      </CardContent>
+                    </Card>
                   </TabsContent>
                 </Tabs>
               </div>
