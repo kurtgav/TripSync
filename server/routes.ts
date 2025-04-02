@@ -352,6 +352,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Messages routes
+  app.get("/api/messages/conversations", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to view conversations");
+    }
+
+    try {
+      // Get all messages for this user (sent or received)
+      const allMessages = await storage.getAllUserMessages(req.user.id);
+      
+      // Group by the other user's ID
+      const conversationsMap = new Map();
+      
+      for (const message of allMessages) {
+        const otherUserId = message.senderId === req.user.id ? message.receiverId : message.senderId;
+        
+        if (!conversationsMap.has(otherUserId)) {
+          // Get user info
+          const user = await storage.getUser(otherUserId);
+          if (!user) continue;
+
+          // Create sanitized user object
+          const sanitizedUser = { ...user };
+          delete sanitizedUser.password;
+          
+          conversationsMap.set(otherUserId, {
+            userId: otherUserId,
+            user: sanitizedUser,
+            messages: [],
+            lastMessage: null,
+            unreadCount: 0
+          });
+        }
+        
+        const conversation = conversationsMap.get(otherUserId);
+        conversation.messages.push(message);
+        
+        // Update last message if this is newer
+        if (!conversation.lastMessage || new Date(message.createdAt) > new Date(conversation.lastMessage.createdAt)) {
+          conversation.lastMessage = message;
+        }
+        
+        // Count unread messages
+        if (message.receiverId === req.user.id && !message.read) {
+          conversation.unreadCount++;
+        }
+      }
+      
+      // Sort conversations by most recent message
+      const conversations = Array.from(conversationsMap.values())
+        .sort((a, b) => {
+          if (!a.lastMessage) return 1;
+          if (!b.lastMessage) return -1;
+          return new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime();
+        });
+      
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error getting conversations:", error);
+      res.status(500).send("Failed to get conversations");
+    }
+  });
+
   app.get("/api/messages/:userId", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("You must be logged in to view messages");

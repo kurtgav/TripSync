@@ -18,7 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Car, Menu, User, MapPin, LayoutDashboard, LogOut, Shield, GraduationCap } from "lucide-react";
+import { Car, Menu, User, MapPin, LayoutDashboard, LogOut, Shield, GraduationCap, MessageSquare } from "lucide-react";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -147,6 +147,14 @@ export default function Navbar() {
                           </a>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/messages">
+                          <a className="flex cursor-pointer items-center">
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            <span>Messages</span>
+                          </a>
+                        </Link>
+                      </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
@@ -271,6 +279,15 @@ export default function Navbar() {
                             className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
                           >
                             Profile
+                          </a>
+                        </Link>
+                        <Link href="/messages">
+                          <a
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 flex items-center"
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Messages
                           </a>
                         </Link>
                         <Link href="/find-ride">

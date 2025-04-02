@@ -47,6 +47,7 @@ export interface IStorage {
   // Message operations
   getMessage(id: number): Promise<Message | undefined>;
   getMessagesBetweenUsers(user1Id: number, user2Id: number): Promise<Message[]>;
+  getAllUserMessages(userId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   markMessageAsRead(id: number): Promise<boolean>;
   
@@ -264,6 +265,12 @@ export class MemStorage implements IStorage {
   // Message methods
   async getMessage(id: number): Promise<Message | undefined> {
     return this.messages.get(id);
+  }
+
+  async getAllUserMessages(userId: number): Promise<Message[]> {
+    return Array.from(this.messages.values()).filter(
+      (message) => message.senderId === userId || message.receiverId === userId
+    ).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   }
 
   async getMessagesBetweenUsers(user1Id: number, user2Id: number): Promise<Message[]> {
@@ -580,10 +587,21 @@ export class DatabaseStorage implements IStorage {
     return message;
   }
 
+  async getAllUserMessages(userId: number): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(
+        or(
+          eq(messages.senderId, userId),
+          eq(messages.receiverId, userId)
+        )
+      )
+      .orderBy(messages.createdAt);
+  }
+
   async getMessagesBetweenUsers(user1Id: number, user2Id: number): Promise<Message[]> {
     return await db.select().from(messages)
       .where(
-        and(
+        or(
           // Either user1 is the sender and user2 is the receiver
           and(eq(messages.senderId, user1Id), eq(messages.receiverId, user2Id)),
           // Or user2 is the sender and user1 is the receiver
