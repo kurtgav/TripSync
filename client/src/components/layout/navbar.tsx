@@ -37,62 +37,56 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/">
-              <a className="flex items-center">
-                <Car className="text-primary h-6 w-6 mr-2" />
-                <span className="text-xl font-bold text-primary">TripSync</span>
-              </a>
+            <Link href="/" className="flex items-center">
+              <Car className="text-primary h-6 w-6 mr-2" />
+              <span className="text-xl font-bold text-primary">TripSync</span>
             </Link>
           </div>
 
           {/* Navigation Links - Desktop */}
           <div className="hidden sm:flex items-center flex-1 justify-center">
             <div className="flex space-x-8">
-              <Link href="/">
-                <a
-                  className={`${
-                    isActive("/")
-                      ? "border-primary text-gray-900"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                >
-                  Home
-                </a>
+              <Link 
+                href="/" 
+                className={`${
+                  isActive("/")
+                    ? "border-primary text-gray-900"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              >
+                Home
               </Link>
-              <Link href="/how-it-works">
-                <a
-                  className={`${
-                    isActive("/how-it-works")
-                      ? "border-primary text-gray-900"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                >
-                  How It Works
-                </a>
+              <Link 
+                href="/how-it-works"
+                className={`${
+                  isActive("/how-it-works")
+                    ? "border-primary text-gray-900"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              >
+                How It Works
               </Link>
-              <Link href="/universities">
-                <a
-                  className={`${
-                    isActive("/universities")
-                      ? "border-primary text-gray-900"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                >
-                  <GraduationCap className="h-4 w-4 mr-1" />
-                  Universities
-                </a>
+              <Link 
+                href="/universities"
+                className={`${
+                  isActive("/universities")
+                    ? "border-primary text-gray-900"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              >
+                <GraduationCap className="h-4 w-4 mr-1" />
+                Universities
               </Link>
-              <Link href="/safety">
-                <a
-                  className={`${
-                    isActive("/safety")
-                      ? "border-primary text-gray-900"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                >
-                  <Shield className="h-4 w-4 mr-1" />
-                  Safety
-                </a>
+              <Link 
+                href="/safety"
+                className={`${
+                  isActive("/safety")
+                    ? "border-primary text-gray-900"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              >
+                <Shield className="h-4 w-4 mr-1" />
+                Safety
               </Link>
             </div>
           </div>
@@ -132,27 +126,21 @@ export default function Navbar() {
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard">
-                          <a className="flex cursor-pointer items-center">
-                            <LayoutDashboard className="mr-2 h-4 w-4" />
-                            <span>Dashboard</span>
-                          </a>
+                        <Link href="/dashboard" className="flex cursor-pointer items-center">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          <span>Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/profile">
-                          <a className="flex cursor-pointer items-center">
-                            <User className="mr-2 h-4 w-4" />
-                            <span>Profile</span>
-                          </a>
+                        <Link href="/profile" className="flex cursor-pointer items-center">
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Profile</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/messages">
-                          <a className="flex cursor-pointer items-center">
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            <span>Messages</span>
-                          </a>
+                        <Link href="/messages" className="flex cursor-pointer items-center">
+                          <MessageSquare className="mr-2 h-4 w-4" />
+                          <span>Messages</span>
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
@@ -198,55 +186,51 @@ export default function Navbar() {
                   </SheetTitle>
                 </SheetHeader>
                 <div className="pt-2 pb-3 space-y-1">
-                  <Link href="/">
-                    <a
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`${
-                        isActive("/")
-                          ? "bg-primary-50 border-primary text-primary-700"
-                          : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-                      } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
-                    >
-                      Home
-                    </a>
+                  <Link 
+                    href="/"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`${
+                      isActive("/")
+                        ? "bg-primary-50 border-primary text-primary-700"
+                        : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                    } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+                  >
+                    Home
                   </Link>
-                  <Link href="/how-it-works">
-                    <a
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`${
-                        isActive("/how-it-works")
-                          ? "bg-primary-50 border-primary text-primary-700"
-                          : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-                      } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
-                    >
-                      How It Works
-                    </a>
+                  <Link 
+                    href="/how-it-works"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`${
+                      isActive("/how-it-works")
+                        ? "bg-primary-50 border-primary text-primary-700"
+                        : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                    } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+                  >
+                    How It Works
                   </Link>
-                  <Link href="/universities">
-                    <a
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`${
-                        isActive("/universities")
-                          ? "bg-primary-50 border-primary text-primary-700"
-                          : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-                      } block pl-3 pr-4 py-2 border-l-4 text-base font-medium flex items-center`}
-                    >
-                      <GraduationCap className="h-4 w-4 mr-2" />
-                      Universities
-                    </a>
+                  <Link 
+                    href="/universities"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`${
+                      isActive("/universities")
+                        ? "bg-primary-50 border-primary text-primary-700"
+                        : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                    } block pl-3 pr-4 py-2 border-l-4 text-base font-medium flex items-center`}
+                  >
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                    Universities
                   </Link>
-                  <Link href="/safety">
-                    <a
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`${
-                        isActive("/safety")
-                          ? "bg-primary-50 border-primary text-primary-700"
-                          : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-                      } block pl-3 pr-4 py-2 border-l-4 text-base font-medium flex items-center`}
-                    >
-                      <Shield className="h-4 w-4 mr-2" />
-                      Safety
-                    </a>
+                  <Link 
+                    href="/safety"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`${
+                      isActive("/safety")
+                        ? "bg-primary-50 border-primary text-primary-700"
+                        : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                    } block pl-3 pr-4 py-2 border-l-4 text-base font-medium flex items-center`}
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Safety
                   </Link>
                 </div>
                 {user ? (
@@ -265,46 +249,41 @@ export default function Navbar() {
                         </div>
                       </div>
                       <div className="mt-3 space-y-1">
-                        <Link href="/dashboard">
-                          <a
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                          >
-                            Dashboard
-                          </a>
+                        <Link 
+                          href="/dashboard"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                        >
+                          Dashboard
                         </Link>
-                        <Link href="/profile">
-                          <a
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                          >
-                            Profile
-                          </a>
+                        <Link 
+                          href="/profile"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                        >
+                          Profile
                         </Link>
-                        <Link href="/messages">
-                          <a
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 flex items-center"
-                          >
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Messages
-                          </a>
+                        <Link 
+                          href="/messages"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 flex items-center"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Messages
                         </Link>
-                        <Link href="/find-ride">
-                          <a
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                          >
-                            Find a Ride
-                          </a>
+                        <Link 
+                          href="/find-ride"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                        >
+                          Find a Ride
                         </Link>
-                        <Link href="/offer-ride">
-                          <a
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                          >
-                            Offer a Ride
-                          </a>
+                        <Link 
+                          href="/offer-ride"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                        >
+                          Offer a Ride
                         </Link>
                         <button
                           onClick={() => {

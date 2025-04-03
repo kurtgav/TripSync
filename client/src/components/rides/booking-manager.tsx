@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, MessageCircle, AlertTriangle } from 'lucide-react';
 import { Booking, Ride, User } from '@shared/schema';
 import { formatDistanceToNow, format } from 'date-fns';
+import { Link } from 'wouter';
 
 interface BookingManagerProps {
   rideId: number;
@@ -33,27 +35,58 @@ interface BookingManagerProps {
 
 export default function BookingManager({ rideId, isOpen, onClose }: BookingManagerProps) {
   const { toast } = useToast();
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const { user } = useAuth();
+  const [passengerData, setPassengerData] = useState<Record<number, User | null>>({});
+  const [loadingPassengers, setLoadingPassengers] = useState<Record<number, boolean>>({});
 
   // Fetch bookings for this ride
   const { data: bookings, isLoading: isLoadingBookings } = useQuery<Booking[]>({
     queryKey: [`/api/bookings/ride/${rideId}`],
-    enabled: isOpen && !!rideId,
+    enabled: isOpen && !!rideId && !!user,
   });
 
   // Fetch ride details
   const { data: ride } = useQuery<Ride>({
     queryKey: [`/api/rides/${rideId}`],
-    enabled: isOpen && !!rideId,
+    enabled: isOpen && !!rideId && !!user,
   });
 
-  // Function to fetch user data for each booking
-  const useUserData = (userId: number) => {
-    return useQuery<User>({
-      queryKey: [`/api/users/${userId}`],
-      enabled: !!userId,
-    });
-  };
+  // Load passenger data when bookings are available
+  useEffect(() => {
+    if (bookings && bookings.length > 0) {
+      // Create a list of passenger IDs
+      const passengerIds: number[] = [];
+      bookings.forEach(booking => {
+        if (!passengerIds.includes(booking.passengerId)) {
+          passengerIds.push(booking.passengerId);
+        }
+      });
+      
+      // Initialize loading state for each passenger
+      const initialLoadingState: Record<number, boolean> = {};
+      passengerIds.forEach(id => {
+        initialLoadingState[id] = true;
+      });
+      setLoadingPassengers(initialLoadingState);
+      
+      // Fetch data for each passenger
+      passengerIds.forEach(async (passengerId) => {
+        try {
+          const response = await fetch(`/api/users/${passengerId}`);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch passenger data: ${response.statusText}`);
+          }
+          const userData = await response.json();
+          setPassengerData(prev => ({ ...prev, [passengerId]: userData }));
+        } catch (error) {
+          console.error(`Error fetching passenger ${passengerId}:`, error);
+          setPassengerData(prev => ({ ...prev, [passengerId]: null }));
+        } finally {
+          setLoadingPassengers(prev => ({ ...prev, [passengerId]: false }));
+        }
+      });
+    }
+  }, [bookings]);
 
   // Mutation to update booking status
   const updateBookingStatus = useMutation({
@@ -84,15 +117,6 @@ export default function BookingManager({ rideId, isOpen, onClose }: BookingManag
 
   const handleCancelBooking = (bookingId: number) => {
     updateBookingStatus.mutate({ bookingId, status: 'cancelled' });
-  };
-
-  const handleStartChat = (userId: number) => {
-    // Navigate to chat with this user
-    // This will be implemented when we create the chat page
-    toast({
-      title: 'Chat started',
-      description: 'Chat functionality will be available soon!',
-    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -152,7 +176,8 @@ export default function BookingManager({ rideId, isOpen, onClose }: BookingManag
               </TableHeader>
               <TableBody>
                 {bookings.map((booking) => {
-                  const { data: passengerData, isLoading: isLoadingPassenger } = useUserData(booking.passengerId);
+                  const passenger = passengerData[booking.passengerId];
+                  const isLoadingPassenger = loadingPassengers[booking.passengerId];
                   
                   return (
                     <TableRow key={booking.id}>
@@ -167,11 +192,11 @@ export default function BookingManager({ rideId, isOpen, onClose }: BookingManag
                           ) : (
                             <Avatar>
                               <AvatarImage 
-                                src={passengerData?.profileImage || undefined} 
-                                alt={passengerData?.fullName || "Passenger"} 
+                                src={passenger?.profileImage || undefined} 
+                                alt={passenger?.fullName || "Passenger"} 
                               />
                               <AvatarFallback>
-                                {passengerData?.fullName?.charAt(0) || "P"}
+                                {passenger?.fullName?.charAt(0) || "P"}
                               </AvatarFallback>
                             </Avatar>
                           )}
@@ -179,11 +204,11 @@ export default function BookingManager({ rideId, isOpen, onClose }: BookingManag
                             <p className="text-sm font-medium">
                               {isLoadingPassenger 
                                 ? "Loading..." 
-                                : passengerData?.fullName || "Unknown Passenger"}
+                                : passenger?.fullName || "Unknown Passenger"}
                             </p>
-                            {!isLoadingPassenger && passengerData?.rating && (
+                            {!isLoadingPassenger && passenger?.rating && (
                               <p className="text-xs text-gray-500">
-                                Rating: ⭐ {passengerData.rating.toFixed(1)} ({passengerData.reviewCount})
+                                Rating: ⭐ {passenger.rating.toFixed(1)} ({passenger.reviewCount || 0})
                               </p>
                             )}
                           </div>
@@ -197,14 +222,19 @@ export default function BookingManager({ rideId, isOpen, onClose }: BookingManag
                       <TableCell>{getStatusBadge(booking.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex space-x-2 justify-end">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleStartChat(booking.passengerId)}
-                          >
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            Chat
-                          </Button>
+                          <Link href={`/messages/${booking.passengerId}`}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onClose();
+                              }}
+                            >
+                              <MessageCircle className="h-4 w-4 mr-1" />
+                              Chat
+                            </Button>
+                          </Link>
                           
                           {booking.status === 'pending' && (
                             <>
