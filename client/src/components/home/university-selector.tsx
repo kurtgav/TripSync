@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UNIVERSITIES } from "@/lib/data";
+import { UNIVERSITY_NAMES } from "@/lib/data";
 import { Search } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -51,7 +51,7 @@ export default function UniversitySelector() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {UNIVERSITIES.map((uni, index) => (
+                    {UNIVERSITY_NAMES.map((uni, index) => (
                       <SelectItem key={index} value={uni}>
                         {uni}
                       </SelectItem>

@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Ride } from "@shared/schema";
-import { UNIVERSITIES } from "@/lib/data";
+import { UNIVERSITY_NAMES } from "@/lib/data";
 import { format, isWithinInterval, addDays, parseISO } from "date-fns";
 import {
   Search,
@@ -178,7 +178,7 @@ export default function FindRide() {
                       <SelectValue placeholder="Select university" />
                     </SelectTrigger>
                     <SelectContent>
-                      {UNIVERSITIES.map((uni, index) => (
+                      {UNIVERSITY_NAMES.map((uni, index) => (
                         <SelectItem key={index} value={uni}>
                           {uni}
                         </SelectItem>

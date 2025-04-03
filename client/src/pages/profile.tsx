@@ -43,7 +43,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { Review } from "@shared/schema";
-import { UNIVERSITIES } from "@/lib/data";
+import { UNIVERSITY_NAMES } from "@/lib/data";
 import { User, Settings, Car, Star, Shield, Clock, AlertCircle } from "lucide-react";
 
 // Profile update schema
@@ -410,7 +410,7 @@ export default function Profile() {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      {UNIVERSITIES.map((uni, index) => (
+                                      {UNIVERSITY_NAMES.map((uni, index) => (
                                         <SelectItem key={index} value={uni}>
                                           {uni}
                                         </SelectItem>

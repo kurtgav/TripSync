@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Helmet } from "react-helmet";
-import { UNIVERSITIES } from "@/lib/data";
+import { UNIVERSITY_NAMES } from "@/lib/data";
 import { Car, Users, UserPlus, LogIn } from "lucide-react";
 import { insertUserSchema, loginSchema } from "@shared/schema";
 import Navbar from "@/components/layout/navbar";
@@ -259,7 +259,7 @@ export default function AuthPage() {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      {UNIVERSITIES.map((uni, index) => (
+                                      {UNIVERSITY_NAMES.map((uni, index) => (
                                         <SelectItem key={index} value={uni}>
                                           {uni}
                                         </SelectItem>

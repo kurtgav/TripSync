@@ -1,12 +1,91 @@
-import { HowItWorksItem, Testimonial, MapFeature, UniversityPartner } from "./types";
+import { University, HowItWorksItem, Testimonial, MapFeature, UniversityPartner } from "./types";
 
-export const UNIVERSITIES = [
+// Import university assets
+import mmclLogoPath from "@assets/mmcl-logo.png";
+import mmclCampusPath from "@assets/mmcl-campus.png";
+import dlsuLogoPath from "@assets/dlsu-logo.png";
+import dlsuCampusPath from "@assets/dlsu-campus.png";
+import ustLogoPath from "@assets/ust-logo.png";
+import ustCampusPath from "@assets/ust-campus.png";
+import feuLogoPath from "@assets/feu-logo.png";
+import feuCampusPath from "@assets/feu-campus.png";
+import nuLogoPath from "@assets/nu-logo.png";
+import nuCampusPath from "@assets/nu-campus.png";
+import bedaLogoPath from "@assets/beda-logo.png";
+import bedaCampusPath from "@assets/beda-campus.png";
+
+// Simple university name array for dropdowns and selects
+export const UNIVERSITY_NAMES = [
   "Mapúa Malayan Colleges Laguna (MMCL)",
   "De La Salle University (DLSU)",
   "University of Santo Tomas (UST)",
   "Far Eastern University Alabang (FEU Alabang)",
   "National University Laguna (NU Laguna)",
   "San Beda College Alabang (SBCA)"
+];
+
+// Detailed university data with logos and campus images
+export const UNIVERSITIES: University[] = [
+  {
+    id: "mmcl",
+    name: "Mapúa Malayan Colleges Laguna",
+    shortName: "MMCL",
+    logo: mmclLogoPath,
+    campus: mmclCampusPath,
+    description: "Mapúa Malayan Colleges Laguna is a premier engineering and technological higher education institution in the CALABARZON region dedicated to providing quality education for the youth.",
+    location: "Laguna, Philippines",
+    established: "2006"
+  },
+  {
+    id: "dlsu",
+    name: "De La Salle University",
+    shortName: "DLSU",
+    logo: dlsuLogoPath,
+    campus: dlsuCampusPath,
+    description: "De La Salle University is a Catholic coeducational higher education institution run by De La Salle Brothers. It offers programs in various disciplines and is known for its excellence in business and engineering education.",
+    location: "Manila, Philippines",
+    established: "1911"
+  },
+  {
+    id: "ust",
+    name: "University of Santo Tomas",
+    shortName: "UST",
+    logo: ustLogoPath,
+    campus: ustCampusPath,
+    description: "The University of Santo Tomas, the Catholic University of the Philippines, is the oldest existing university in Asia. It's renowned for its medical and health sciences programs.",
+    location: "Manila, Philippines",
+    established: "1611"
+  },
+  {
+    id: "feu",
+    name: "Far Eastern University Alabang",
+    shortName: "FEU Alabang",
+    logo: feuLogoPath,
+    campus: feuCampusPath,
+    description: "Far Eastern University Alabang is a branch of FEU that offers various undergraduate and graduate programs with a focus on business, education, and technology.",
+    location: "Alabang, Muntinlupa, Philippines",
+    established: "2018"
+  },
+  {
+    id: "nu",
+    name: "National University Laguna",
+    shortName: "NU Laguna",
+    logo: nuLogoPath,
+    campus: nuCampusPath,
+    description: "National University Laguna is a leading educational institution that emphasizes innovation and quality education, offering programs in engineering, business, and computer science.",
+    location: "Laguna, Philippines",
+    established: "1900"
+  },
+  {
+    id: "sbca",
+    name: "San Beda College Alabang",
+    shortName: "SBCA",
+    logo: bedaLogoPath,
+    campus: bedaCampusPath,
+    description: "San Beda College Alabang is a Catholic educational institution that provides primary to tertiary education with a focus on holistic development and academic excellence.",
+    location: "Alabang, Muntinlupa, Philippines",
+    established: "1972"
+  }
 ];
 
 export const HOW_IT_WORKS_ITEMS: HowItWorksItem[] = [
@@ -85,31 +164,31 @@ export const UNIVERSITY_PARTNERS: UniversityPartner[] = [
   {
     id: 1,
     name: "Mapúa Malayan Colleges Laguna",
-    logo: "https://images.unsplash.com/photo-1559103743-56bcc6b35d59?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+    logo: mmclLogoPath
   },
   {
     id: 2,
     name: "De La Salle University",
-    logo: "https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
+    logo: dlsuLogoPath
   },
   {
     id: 3,
     name: "University of Santo Tomas",
-    logo: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
+    logo: ustLogoPath
   },
   {
     id: 4,
     name: "Far Eastern University Alabang",
-    logo: "https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
+    logo: feuLogoPath
   },
   {
     id: 5,
     name: "National University Laguna",
-    logo: "https://images.unsplash.com/photo-1559103743-56bcc6b35d59?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
+    logo: nuLogoPath
   },
   {
     id: 6,
     name: "San Beda College Alabang",
-    logo: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
+    logo: bedaLogoPath
   }
 ];

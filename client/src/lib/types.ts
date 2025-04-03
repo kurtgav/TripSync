@@ -1,6 +1,12 @@
 export interface University {
   id: string;
   name: string;
+  shortName: string;
+  logo: string;
+  campus: string;
+  description: string;
+  location: string;
+  established: string;
 }
 
 export interface HowItWorksItem {
