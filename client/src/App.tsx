@@ -12,6 +12,7 @@ import Profile from "@/pages/profile";
 import MessagesPage from "@/pages/messages";
 import Universities from "@/pages/universities";
 import Safety from "@/pages/safety";
+import HowItWorksPage from "@/pages/how-it-works";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <ProtectedRoute path="/messages/:userId" component={MessagesPage} />
       <Route path="/universities" component={Universities} />
       <Route path="/safety" component={Safety} />
+      <Route path="/how-it-works" component={HowItWorksPage} />
       <Route component={NotFound} />
     </Switch>
   );
