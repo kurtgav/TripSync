@@ -15,6 +15,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
+import { UNIVERSITIES } from "@/lib/data";
+
+// Import university assets
+import mmclLogoPath from "@assets/mmcl-logo.png";
+import mmclCampusPath from "@assets/mmcl-campus.png";
+import dlsuLogoPath from "@assets/dlsu-logo.png";
+import dlsuCampusPath from "@assets/dlsu-campus.png";
+import ustLogoPath from "@assets/ust-logo.png";
+import ustCampusPath from "@assets/ust-campus.png";
+import feuLogoPath from "@assets/feu-logo.png";
+import feuCampusPath from "@assets/feu-campus.png";
+import nuLogoPath from "@assets/nu-logo.png";
+import nuCampusPath from "@assets/nu-campus.png";
+import bedaLogoPath from "@assets/beda-logo.png";
+import bedaCampusPath from "@assets/beda-campus.png";
 
 export default function Universities() {
   const universities = [
@@ -26,8 +41,8 @@ export default function Universities() {
       students: 16000,
       established: 1911,
       description: "De La Salle University positions itself as a leader in molding human resources who serve the church and the nation. It is a Catholic coeducational institution founded by the Brothers of the Christian Schools.",
-      image: "https://upload.wikimedia.org/wikipedia/en/c/c9/De_La_Salle_University_Coat_of_Arms.svg",
-      campus: "https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+      image: dlsuLogoPath,
+      campus: dlsuCampusPath,
       rides: 124,
       drivers: 45,
       passengers: 210,
@@ -42,8 +57,8 @@ export default function Universities() {
       students: 40000,
       established: 1611,
       description: "The University of Santo Tomas is the oldest existing university in Asia. In terms of student population, it is the largest Catholic university in the world in a single campus.",
-      image: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7f/University_of_Santo_Tomas_Seal.svg/1200px-University_of_Santo_Tomas_Seal.svg.png",
-      campus: "https://images.unsplash.com/photo-1574068436340-23f023aeea7c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+      image: ustLogoPath,
+      campus: ustCampusPath,
       rides: 187,
       drivers: 63,
       passengers: 345,
@@ -58,8 +73,8 @@ export default function Universities() {
       students: 8000,
       established: 2006,
       description: "Mapúa Malayan Colleges Laguna offers programs in engineering, architecture, business, arts and sciences, and serves as a center of excellence in education in Southern Luzon.",
-      image: "https://upload.wikimedia.org/wikipedia/en/d/d8/MCL_Mapua_Malayan_Colleges_Laguna_official_logo.png",
-      campus: "https://images.unsplash.com/photo-1592066575517-58df903152f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+      image: mmclLogoPath,
+      campus: mmclCampusPath,
       rides: 98,
       drivers: 32,
       passengers: 145,
@@ -74,8 +89,8 @@ export default function Universities() {
       students: 5000,
       established: 2019,
       description: "National University Laguna is one of the newest university campuses in the region, offering quality education with a focus on technology and innovation.",
-      image: "https://upload.wikimedia.org/wikipedia/en/c/c2/National_University_%28Philippines%29_logo.png",
-      campus: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+      image: nuLogoPath,
+      campus: nuCampusPath,
       rides: 56,
       drivers: 18,
       passengers: 87,
@@ -84,14 +99,14 @@ export default function Universities() {
     },
     {
       id: 5,
-      name: "FEU Alabang",
+      name: "Far Eastern University Alabang (FEU Alabang)",
       location: "Muntinlupa",
       coordinates: "14.4231° N, 121.0309° E",
       students: 7500,
       established: 2014,
       description: "FEU Alabang is one of the newest branches of Far Eastern University, offering diverse programs and modern learning facilities.",
-      image: "https://upload.wikimedia.org/wikipedia/en/b/b8/Far_Eastern_University_seal.svg",
-      campus: "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+      image: feuLogoPath,
+      campus: feuCampusPath,
       rides: 78,
       drivers: 25,
       passengers: 112,
@@ -100,14 +115,14 @@ export default function Universities() {
     },
     {
       id: 6,
-      name: "St. Benilde College Alabang (SBCA)",
+      name: "San Beda College Alabang (SBCA)",
       location: "Muntinlupa",
       coordinates: "14.4183° N, 121.0299° E",
       students: 6000,
       established: 2009,
-      description: "St. Benilde College Alabang is an institution known for its progressive approach to education, creative programs, and commitment to community service.",
-      image: "https://upload.wikimedia.org/wikipedia/en/e/e7/De_La_Salle-College_of_Saint_Benilde_seal.svg",
-      campus: "https://images.unsplash.com/photo-1583108607575-60635e2ae8fe?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+      description: "San Beda College Alabang is an institution known for its progressive approach to education, creative programs, and commitment to community service.",
+      image: bedaLogoPath,
+      campus: bedaCampusPath,
       rides: 67,
       drivers: 22,
       passengers: 98,
@@ -227,8 +242,8 @@ export default function Universities() {
                     <div className="flex flex-col md:flex-row gap-6">
                       <div className="md:w-1/3">
                         <img 
-                          src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
-                          alt="MMCL Students" 
+                          src={mmclCampusPath} 
+                          alt="MMCL Campus" 
                           className="rounded-lg shadow-md w-full h-auto"
                         />
                       </div>
@@ -259,8 +274,8 @@ export default function Universities() {
                     <div className="flex flex-col md:flex-row gap-6">
                       <div className="md:w-1/3">
                         <img 
-                          src="https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
-                          alt="DLSU Students" 
+                          src={dlsuCampusPath} 
+                          alt="DLSU Campus" 
                           className="rounded-lg shadow-md w-full h-auto"
                         />
                       </div>
@@ -291,8 +306,8 @@ export default function Universities() {
                     <div className="flex flex-col md:flex-row gap-6">
                       <div className="md:w-1/3">
                         <img 
-                          src="https://images.unsplash.com/photo-1627556704290-2b1f5853ff78?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
-                          alt="UST Students" 
+                          src={ustCampusPath} 
+                          alt="UST Campus" 
                           className="rounded-lg shadow-md w-full h-auto"
                         />
                       </div>
