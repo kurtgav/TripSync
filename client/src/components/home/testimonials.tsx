@@ -2,6 +2,37 @@ import { TESTIMONIALS } from "@/lib/data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, StarHalf } from "lucide-react";
 
+// Define our own testimonials to ensure they display correctly
+const localTestimonials = [
+  {
+    id: 1,
+    name: "Georgette D.",
+    university: "DLSU",
+    year: "3rd Year",
+    text: "TripSync has saved me so much money on transportation. I used to spend ₱200 daily on commuting, now it's down to ₱80. Plus, I've made some great friends from my university!",
+    rating: 5,
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  },
+  {
+    id: 2,
+    name: "Herim L.",
+    university: "UST",
+    year: "2nd Year",
+    text: "As a female student, I was always worried about commuting late at night. TripSync lets me travel with verified students from my university, which gives me and my parents peace of mind.",
+    rating: 5,
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  },
+  {
+    id: 3,
+    name: "Wince R.",
+    university: "FEU",
+    year: "4th Year",
+    text: "I drive to university everyday anyway, so offering rides on TripSync helps me offset my gas expenses. I'm making around ₱2,000 extra per week just by giving rides to fellow students!",
+    rating: 4.5,
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  }
+];
+
 export default function Testimonials() {
   const renderStars = (rating: number) => {
     const stars = [];
@@ -31,7 +62,7 @@ export default function Testimonials() {
           </p>
         </div>
         <div className="mt-12 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
-          {TESTIMONIALS.map((testimonial) => (
+          {localTestimonials.map((testimonial) => (
             <Card key={testimonial.id} className="flex flex-col">
               <CardContent className="flex-1 p-6">
                 <div className="flex-1">

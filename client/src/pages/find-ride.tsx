@@ -32,6 +32,13 @@ import {
   Clock,
 } from "lucide-react";
 
+// Define filter type
+interface ActiveFilter {
+  id: string;
+  label: string;
+  value: string;
+}
+
 export default function FindRide() {
   const [location, setLocation] = useLocation();
   
@@ -44,16 +51,16 @@ export default function FindRide() {
   const [university, setUniversity] = useState(urlUniversity);
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
-  const [departureDate, setDepartureDate] = useState(urlTime ? new Date(urlTime) : undefined);
-  const [priceRange, setPriceRange] = useState([0, 500]);
-  const [activeFilters, setActiveFilters] = useState([]);
+  const [departureDate, setDepartureDate] = useState<Date | undefined>(urlTime ? new Date(urlTime) : undefined);
+  const [priceRange, setPriceRange] = useState<number[]>([0, 500]);
+  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
   
   // Filtered rides
-  const [filteredRides, setFilteredRides] = useState([]);
+  const [filteredRides, setFilteredRides] = useState<Ride[]>([]);
   
-  // Get all rides
+  // Get all rides or rides by university
   const { data: rides = [], isLoading } = useQuery<Ride[]>({
-    queryKey: ["/api/rides"],
+    queryKey: [university ? `/api/rides/university/${encodeURIComponent(university)}` : '/api/rides'],
   });
   
   // Filter rides based on selected filters
@@ -61,15 +68,10 @@ export default function FindRide() {
     if (!rides || rides.length === 0) return;
     
     let filtered = [...rides];
-    let newActiveFilters = [];
+    let newActiveFilters: ActiveFilter[] = [];
     
-    // Filter by university
+    // University filter is handled by the API call
     if (university) {
-      filtered = filtered.filter(ride => {
-        // In a real app, we'd check if the driver is from this university
-        // For now, we'll assume all rides match the selected university
-        return true;
-      });
       newActiveFilters.push({ id: "university", label: university, value: university });
     }
     
@@ -122,7 +124,7 @@ export default function FindRide() {
     setActiveFilters(newActiveFilters);
   }, [rides, university, origin, destination, departureDate, priceRange]);
   
-  const clearFilter = (filterId) => {
+  const clearFilter = (filterId: string) => {
     switch (filterId) {
       case "university":
         setUniversity("");

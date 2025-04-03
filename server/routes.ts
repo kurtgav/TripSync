@@ -30,8 +30,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/rides/university/:university", async (req, res) => {
     try {
       const university = req.params.university;
+      
+      console.log(`Fetching rides for university: ${university}`);
+      
+      // Validate that the university parameter is provided
+      if (!university) {
+        return res.status(400).send("University parameter is required");
+      }
+      
       const rides = await storage.getRidesByUniversity(university);
-      res.json(rides);
+      
+      console.log(`Found ${rides.length} rides for university: ${university}`);
+      
+      // Get full ride details
+      const ridesWithDetails = await Promise.all(rides.map(async (ride) => {
+        const driver = await storage.getUser(ride.driverId);
+        return {
+          ...ride,
+          driver: {
+            id: driver?.id,
+            fullName: driver?.fullName,
+            rating: driver?.rating,
+            reviewCount: driver?.reviewCount,
+            profileImage: driver?.profileImage,
+            university: driver?.university
+          }
+        };
+      }));
+      
+      res.json(ridesWithDetails);
     } catch (error) {
       console.error("Error getting university rides:", error);
       res.status(500).send("Failed to get university rides");

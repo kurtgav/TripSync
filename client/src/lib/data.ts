@@ -115,7 +115,7 @@ export const HOW_IT_WORKS_ITEMS: HowItWorksItem[] = [
 export const TESTIMONIALS: Testimonial[] = [
   {
     id: 1,
-    name: "Pia M.",
+    name: "Georgette D.",
     university: "DLSU",
     year: "3rd Year",
     text: "TripSync has saved me so much money on transportation. I used to spend ₱200 daily on commuting, now it's down to ₱80. Plus, I've made some great friends from my university!",
@@ -124,7 +124,7 @@ export const TESTIMONIALS: Testimonial[] = [
   },
   {
     id: 2,
-    name: "Jasmine T.",
+    name: "Herim L.",
     university: "UST",
     year: "2nd Year",
     text: "As a female student, I was always worried about commuting late at night. TripSync lets me travel with verified students from my university, which gives me and my parents peace of mind.",
@@ -133,7 +133,7 @@ export const TESTIMONIALS: Testimonial[] = [
   },
   {
     id: 3,
-    name: "Marco D.",
+    name: "Wince R.",
     university: "FEU",
     year: "4th Year",
     text: "I drive to university everyday anyway, so offering rides on TripSync helps me offset my gas expenses. I'm making around ₱2,000 extra per week just by giving rides to fellow students!",

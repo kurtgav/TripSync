@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import BookingManager from "./booking-manager";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +30,6 @@ export default function RideCard({ ride }: RideCardProps) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [driver, setDriver] = useState<User | null>(null);
-  const [isBookingManagerOpen, setIsBookingManagerOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   // Fetch driver details
@@ -170,6 +168,11 @@ export default function RideCard({ ride }: RideCardProps) {
                   {driver ? `${driver.rating} (${driver.reviewCount})` : ""}
                 </span>
               </div>
+              {driver?.university && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {driver.university}
+                </p>
+              )}
             </div>
           </div>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -209,14 +212,15 @@ export default function RideCard({ ride }: RideCardProps) {
         {user && user.id === ride.driverId ? (
           // Driver controls
           <div className="flex space-x-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsBookingManagerOpen(true)}
-            >
-              <Eye className="h-4 w-4 mr-1" />
-              View Bookings
-            </Button>
+            <Link href={`/ride-details/${ride.id}`}>
+              <Button
+                size="sm"
+                variant="outline"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View Bookings
+              </Button>
+            </Link>
             <Button
               size="sm"
               variant="destructive"
@@ -244,30 +248,28 @@ export default function RideCard({ ride }: RideCardProps) {
         )}
       </CardFooter>
 
-      {/* Booking Manager Dialog */}
-      <BookingManager 
-        rideId={ride.id}
-        isOpen={isBookingManagerOpen}
-        onClose={() => setIsBookingManagerOpen(false)}
-      />
-
       {/* Cancel Ride Dialog */}
       <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel this ride?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will cancel your ride and notify all passengers who have booked.
+              This action cannot be undone. This will cancel the ride and notify all passengers who have booked.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Keep Ride</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700 text-white"
               onClick={() => cancelRideMutation.mutate()}
-              disabled={cancelRideMutation.isPending}
+              className="bg-red-500 hover:bg-red-600"
             >
-              {cancelRideMutation.isPending ? "Cancelling..." : "Yes, cancel ride"}
+              {cancelRideMutation.isPending ? (
+                <>
+                  <span className="animate-spin mr-1">⏳</span> Cancelling...
+                </>
+              ) : (
+                "Cancel Ride"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

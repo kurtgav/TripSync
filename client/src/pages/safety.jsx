@@ -95,13 +95,6 @@ export default function Safety() {
                     </li>
                   </ul>
                 </div>
-                <div className="md:w-1/2">
-                  <img 
-                    src="https://images.unsplash.com/photo-1551641506-ee5bf4cb45f3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" 
-                    alt="Safety check" 
-                    className="rounded-lg shadow-md"
-                  />
-                </div>
               </div>
             </div>
             

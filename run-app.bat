@@ -1,0 +1,2 @@
+@echo off
+cmd /c "set DATABASE_URL=postgresql://neondb_owner:npg_2ATlFJ3PSKxm@ep-withered-grass-a5ctcccf-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require && set NODE_ENV=development && npm run dev" 
